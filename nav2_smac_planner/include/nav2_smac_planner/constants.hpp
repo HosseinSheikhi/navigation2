@@ -26,7 +26,8 @@ enum class MotionModel
   MOORE = 2,
   DUBIN = 3,
   REEDS_SHEPP = 4,
-  STATE_LATTICE = 5,
+  OMNI = 5,
+  STATE_LATTICE = 6,
 };
 
 inline std::string toString(const MotionModel & n)
@@ -40,6 +41,8 @@ inline std::string toString(const MotionModel & n)
       return "Dubin";
     case MotionModel::REEDS_SHEPP:
       return "Reeds-Shepp";
+    case MotionModel::OMNI:
+      return "Omni";
     case MotionModel::STATE_LATTICE:
       return "State Lattice";
     default:
@@ -57,6 +60,8 @@ inline MotionModel fromString(const std::string & n)
     return MotionModel::DUBIN;
   } else if (n == "REEDS_SHEPP") {
     return MotionModel::REEDS_SHEPP;
+  } else if (n == "OMNI"){
+      return MotionModel::OMNI;
   } else if (n == "STATE_LATTICE") {
     return MotionModel::STATE_LATTICE;
   } else {

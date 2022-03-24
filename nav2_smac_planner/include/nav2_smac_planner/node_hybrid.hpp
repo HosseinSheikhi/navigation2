@@ -90,6 +90,18 @@ struct HybridMotionTable
     SearchInfo & search_info);
 
   /**
+   * @brief Initializing using omni-drive model
+   * @param size_x_in Size of costmap in X
+   * @param size_y_in Size of costmap in Y
+   * @param angle_quantization_in Size of costmap in bin sizes
+   * @param search_info Parameters for searching
+   */
+  void initOmni(
+      unsigned int & size_x_in,
+      unsigned int & size_y_in,
+      unsigned int & angle_quantization_in,
+      SearchInfo & search_info);
+  /**
    * @brief Get projections of motion models
    * @param node Ptr to NodeHybrid
    * @return A set of motion poses
@@ -443,6 +455,9 @@ public:
 
   // Constants required across all nodes but don't want to allocate more than once
   static double travel_distance_cost;
+  static double turn_inplace_cost;
+  static double lateral_motion_cost;
+  static MotionModel motion_model_;
   static HybridMotionTable motion_table;
   // Wavefront lookup and queue for continuing to expand as needed
   static LookupTable obstacle_heuristic_lookup_table;
