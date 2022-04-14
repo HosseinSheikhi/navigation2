@@ -101,6 +101,10 @@ StaticLayer::onInitialize()
       rclcpp::SystemDefaultsQoS(),
       std::bind(&StaticLayer::incomingUpdate, this, std::placeholders::_1));
   }
+
+  // TODO if subscribe to ceiling
+  ceiling_roi_client_ = node->create_client<custom_roi_srv::srv::ROI>("get_ceiling_roi", rmw_qos_profile_default);
+  RCLCPP_INFO(logger_, "ROI client created!!");
 }
 
 void
@@ -172,72 +176,122 @@ StaticLayer::getParameters()
       this, std::placeholders::_1));
 }
 
+void StaticLayer::ceiling_roi_callback(rclcpp::Client<custom_roi_srv::srv::ROI>::SharedFuture result_future){
+  std::shared_ptr<custom_roi_srv::srv::ROI::Response> response = result_future.get();
+  ceiling_min_x_ = response->x_min;
+  ceiling_min_y_ = response->y_min;
+  ceiling_max_x_ = response->x_max;
+  ceiling_max_y_ = response->y_max;
+  if(ceiling_min_x_!=0 || ceiling_min_y_!=0 || ceiling_max_x_!=0 || ceiling_max_y_!=0)
+    ceiling_roi_received_ = true;
+
+  RCLCPP_INFO(
+      logger_,
+      "ceiling_roi_callback: ROI received %f ,  %f ,  %f  , %f",
+      ceiling_min_x_, ceiling_min_y_, ceiling_max_x_, ceiling_max_y_);
+}
+
+void StaticLayer::resizeCostmap(double static_map_origin_x,
+                                double static_map_origin_y,
+                                unsigned int static_map_width,
+                                unsigned int static_map_height,
+                                double static_map_resolution){
+
+  // get ceiling layer ROI if did not already
+  if(!ceiling_roi_received_) {
+    auto request = std::make_shared<custom_roi_srv::srv::ROI::Request>();
+    rclcpp::Client<custom_roi_srv::srv::ROI>::SharedFutureAndRequestId result_future =
+        ceiling_roi_client_->async_send_request(
+            request, std::bind(&StaticLayer::ceiling_roi_callback, this,
+                               std::placeholders::_1));
+  }
+
+  double map_max_x = static_map_width*static_map_resolution + static_map_origin_x;
+  double map_max_y = static_map_height*static_map_resolution + static_map_origin_y;
+
+  // origin is min of map_origin and ceiling_origin
+  // note that origin is Lower_Left point for all ceiling, map, and costmap
+  double lower_left_x = std::min(static_map_origin_x, ceiling_min_x_);
+  lower_left_x -= 1.0;
+  double lower_left_y = std::min(static_map_origin_y, ceiling_min_y_);
+  lower_left_y -= 1.0;
+
+  double upper_right_x = std::max(map_max_x, ceiling_max_x_);
+  upper_right_x += 1.0;
+  double upper_right_y = std::max(map_max_y, ceiling_max_y_);
+  upper_right_y += 1.0;
+  unsigned int size_x = static_cast<unsigned int>(fabs(upper_right_x - lower_left_x)/static_map_resolution);
+  unsigned int size_y = static_cast<unsigned int>(fabs(upper_right_y - lower_left_y)/static_map_resolution);
+
+
+  // resize costmap if size, resolution or origin do not match
+  Costmap2D * master = layered_costmap_->getCostmap();
+  unsigned int master_size_x = master->getSizeInCellsX();
+  unsigned int master_size_y = master->getSizeInCellsY();
+
+  if(!layered_costmap_->isRolling() && (master_size_x != size_x || master_size_y != size_y || master->getOriginX() != lower_left_x || master->getOriginY() != lower_left_y )){
+    // Update the size of the layered costmap to the union of master grid's size and new map (and all layers, including this one)
+    layered_costmap_->resizeMap(
+        size_x, size_y, static_map_resolution,
+        lower_left_x,
+        lower_left_y,
+        false);
+    RCLCPP_INFO(
+        logger_,
+        "StaticLayer: Resizing costmap to origin at (%f,%f) and size %d X %d  lower_left:(%f,%f) - upper_right(%f,%f)",
+        origin_x_, origin_y_, size_x_, size_y_, lower_left_x, lower_left_y, upper_right_x, upper_right_y);
+  } else{
+    RCLCPP_INFO(logger_, "StaticLayer: no need to resize costmap");
+  }
+
+}
+
 void
 StaticLayer::processMap(const nav_msgs::msg::OccupancyGrid & new_map)
 {
   RCLCPP_DEBUG(logger_, "StaticLayer: Process map");
+  RCLCPP_DEBUG(
+      logger_,
+      "StaticLayer: Received a %d X %d map at %f m/pix", new_map.info.width, new_map.info.height,
+      new_map.info.resolution);
+  std::lock_guard<Costmap2D::mutex_t> guard(*getMutex());
+  resizeCostmap(new_map.info.origin.position.x,
+                new_map.info.origin.position.y,
+                new_map.info.width,
+                new_map.info.height,
+                new_map.info.resolution);
 
   unsigned int size_x = new_map.info.width;
   unsigned int size_y = new_map.info.height;
 
-  RCLCPP_DEBUG(
-    logger_,
-    "StaticLayer: Received a %d X %d map at %f m/pix", size_x, size_y,
-    new_map.info.resolution);
-
-  // resize costmap if size, resolution or origin do not match
-  Costmap2D * master = layered_costmap_->getCostmap();
-  if (!layered_costmap_->isRolling() && (master->getSizeInCellsX() != size_x ||
-    master->getSizeInCellsY() != size_y ||
-    master->getResolution() != new_map.info.resolution ||
-    master->getOriginX() != new_map.info.origin.position.x ||
-    master->getOriginY() != new_map.info.origin.position.y ||
-    !layered_costmap_->isSizeLocked()))
-  {
-    // Update the size of the layered costmap (and all layers, including this one)
-    RCLCPP_INFO(
-      logger_,
-      "StaticLayer: Resizing costmap to %d X %d at %f m/pix", size_x, size_y,
-      new_map.info.resolution);
-    layered_costmap_->resizeMap(
-      size_x, size_y, new_map.info.resolution,
-      new_map.info.origin.position.x,
-      new_map.info.origin.position.y,
-      true);
-  } else if (size_x_ != size_x || size_y_ != size_y ||  // NOLINT
-    resolution_ != new_map.info.resolution ||
-    origin_x_ != new_map.info.origin.position.x ||
-    origin_y_ != new_map.info.origin.position.y)
-  {
-    // only update the size of the costmap stored locally in this layer
-    RCLCPP_INFO(
-      logger_,
-      "StaticLayer: Resizing static layer to %d X %d at %f m/pix", size_x, size_y,
-      new_map.info.resolution);
-    resizeMap(
-      size_x, size_y, new_map.info.resolution,
-      new_map.info.origin.position.x, new_map.info.origin.position.y);
-  }
-
   unsigned int index = 0;
 
-  // we have a new map, update full size of map
-  std::lock_guard<Costmap2D::mutex_t> guard(*getMutex());
+  unsigned int drift_x;
+  unsigned int drift_y;
+  worldToMap(new_map.info.origin.position.x, new_map.info.origin.position.y, drift_x, drift_y);
 
+  // cause costmap_ is a union of map and ceiling, we dont have info for all the grids
+  for (unsigned int i = 0; i < size_y_; ++i)
+    for (unsigned int j = 0; j < size_x_; ++j)
+      costmap_[index++]=NO_INFORMATION;
+
+
+  index = 0;
   // initialize the costmap with static data
   for (unsigned int i = 0; i < size_y; ++i) {
     for (unsigned int j = 0; j < size_x; ++j) {
       unsigned char value = new_map.data[index];
-      costmap_[index] = interpretValue(value);
+      costmap_[getIndex(j + drift_x,i+drift_y)] = interpretValue(value);
       ++index;
     }
   }
 
   map_frame_ = new_map.header.frame_id;
 
-  x_ = y_ = 0;
-  width_ = size_x_;
-  height_ = size_y_;
+  x_ = drift_x;
+  y_ = drift_y;
+  width_ = new_map.info.width;
+  height_ = new_map.info.height;
   has_updated_data_ = true;
 
   current_ = true;
