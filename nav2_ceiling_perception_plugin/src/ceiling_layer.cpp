@@ -41,6 +41,8 @@ void CeilingLayer::onInitialize()
   if (!node) {
     throw std::runtime_error{"Failed to lock node"};
   }
+  current_ = true;
+
   ceiling_map_sub_ = node->create_subscription<nav_msgs::msg::OccupancyGrid>("/ceiling_perception/map",
                                                                               rclcpp::SystemDefaultsQoS(),
                                                                               std::bind(&CeilingLayer::ceiling_map_callback,
