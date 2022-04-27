@@ -43,6 +43,7 @@ struct SearchInfo
   float rotation_penalty;
   float analytic_expansion_ratio;
   float analytic_expansion_max_length;
+  float lateral_motion_penalty;
   std::string lattice_filepath;
   bool cache_obstacle_heuristic;
   bool allow_reverse_expansion;

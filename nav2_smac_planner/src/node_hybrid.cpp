@@ -37,7 +37,7 @@ namespace nav2_smac_planner
 LookupTable NodeHybrid::obstacle_heuristic_lookup_table;
 double NodeHybrid::travel_distance_cost = sqrt(2);
 double NodeHybrid::turn_inplace_cost = sqrt(2)*16.0/64.0; // sqrt(2)*16/num_quantization means every 22.5deg rotation equals to one straight motion
-double NodeHybrid::lateral_motion_cost = sqrt(2)+0.2; // Just to see less lateral motions - Lateral motions have two disadvantages (limited FOV - Odometry deficiency)
+double NodeHybrid::lateral_motion_cost = sqrt(2);
 HybridMotionTable NodeHybrid::motion_table;
 MotionModel NodeHybrid::motion_model_;
 float NodeHybrid::size_lookup = 25;
@@ -246,6 +246,8 @@ void HybridMotionTable::initOmni(
   cost_penalty = search_info.cost_penalty;
   reverse_penalty = search_info.reverse_penalty;
   travel_distance_reward = 1.0f - search_info.retrospective_penalty;
+  NodeHybrid::lateral_motion_cost+= search_info.lateral_motion_penalty;
+
   // if nothing changed, no need to re-compute primitives
   if (num_angle_quantization_in == num_angle_quantization)
   {

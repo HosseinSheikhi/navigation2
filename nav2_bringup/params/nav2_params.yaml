@@ -318,6 +318,7 @@ planner_server:
       analytic_expansion_ratio: 1.5       # For Hybrid/Lattice nodes: The ratio to attempt analytic expansions during search for final approach.
       analytic_expansion_max_length: 1.0    # For Hybrid/Lattice nodes: The maximum length of the analytic expansion to be considered valid to prevent unsafe shortcutting (in meters). This should be scaled with minimum turning radius and be no less than 4-5x the minimum radius
       minimum_turning_radius: 0.10        # For Hybrid/Lattice nodes: minimum turning radius in m of path / vehicle
+      lateral_motion_penalty : 0.0        # For Hybrid::OMNI: to see less lateral motions - Lateral motions have two disadvantages (limited FOV - Odometry deficiency) [0,0.2]
       reverse_penalty: 2.1                # For Reeds-Shepp model: penalty to apply if motion is reversing, must be => 1
       change_penalty: 0.2                 # For Hybrid nodes: penalty to apply if motion is changing directions, must be >= 0
       non_straight_penalty: 1.20          # For Hybrid nodes: penalty to apply if motion is non-straight, must be => 1
