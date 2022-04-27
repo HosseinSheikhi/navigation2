@@ -196,12 +196,16 @@ local_costmap:
       width: 5
       height: 5
       resolution: 0.05
-      footprint: '[[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]'  #'[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]' #'[[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]' # these are exact diemensions of dingo-O
+      #footprint: '[[0.345, -0.70], [0.345, 0.70], [-0.345, 0.70], [-0.345, -0.70]]'
+      footprint: '[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]'  #'[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]' #'[[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]' # these are exact diemensions of dingo-O
+      #footprint: '[[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]' # exact dims
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 4.0 # sim were using 1.1 real 4.0
-        inflation_radius: 0.2 # sim were using 2.0 real 0.2
+        # cost_scaling_factor: 2.1 
+        # inflation_radius: 0.35 
+        # cost_scaling_factor: 4.0 # sim 
+        # inflation_radius: 2.0 # sim 
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
@@ -240,7 +244,9 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       use_sim_time: True
-      footprint: '[[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]' #'[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]'
+      #footprint: '[[0.345, -0.70], [0.345, 0.70], [-0.345, 0.70], [-0.345, -0.70]]'
+      footprint: '[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]' #'[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]'
+      #footprint: '[[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]' # exact dims
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer", "ceiling_layer" ]
@@ -263,8 +269,10 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 4.0 # sim were using 1.1 real 4.0
-        inflation_radius: 0.2 # sim were using 2.0 real 0.2
+        # cost_scaling_factor: 2.1 
+        # inflation_radius: 0.35 
+        cost_scaling_factor: 4.0 # sim 
+        inflation_radius: 2.0 # sim 
       ceiling_layer:
         plugin: "nav2_ceiling_perception_plugin::CeilingLayer"
         enabled: True
