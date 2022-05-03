@@ -276,9 +276,9 @@ void HybridMotionTable::initOmni(
   float delta_y = min_turning_radius - (min_turning_radius * cos(angle));
 
   projections.clear();
-  projections.reserve(7);
+  projections.reserve(6);
   projections.emplace_back(hypotf(delta_x, delta_y), 0.0, 0.0);  // Forward
-  projections.emplace_back(3*hypotf(delta_x, delta_y), 0.0, 0.0);  // Forward
+//  projections.emplace_back(3*hypotf(delta_x, delta_y), 0.0, 0.0);  // Forward
   projections.emplace_back(0.0,hypotf(delta_x, delta_y), 0.0); // Lateral Left
   projections.emplace_back(0.0,-hypotf(delta_x, delta_y), 0.0); // Lateral Right
   projections.emplace_back(0.0,0.0, 1.0); // Turn Inplace Left
@@ -413,19 +413,19 @@ float NodeHybrid::getTraversalCost(const NodePtr & child)
 
   const unsigned int child_motion_primitive_index = child->getMotionPrimitiveIndex();
   if(motion_model_ == MotionModel::OMNI) {
-    if (child_motion_primitive_index <= 3 || child_motion_primitive_index ==6 ) {
+    if (child_motion_primitive_index <= 2 || child_motion_primitive_index ==5 ) {
       // New motion is a straight motion (fwd, backwd, and lateral) , no additional costs to be applied
       travel_cost = travel_cost_raw;
     }
-    if (child_motion_primitive_index == 1){
-      travel_cost*=3;
-    }
-    if (child_motion_primitive_index == 2 || child_motion_primitive_index ==3 ) {
-      // lateral has more cost than fwd
+//    if (child_motion_primitive_index == 1){
+//      travel_cost*=3;
+//    }
+    if (child_motion_primitive_index == 1 || child_motion_primitive_index ==2 ) {
+      // lateral may have more cost than fwd
       travel_cost_raw = NodeHybrid::lateral_motion_cost*(motion_table.travel_distance_reward + motion_table.cost_penalty * normalized_cost);
       travel_cost = travel_cost_raw;
     }
-    if (child_motion_primitive_index == 4 || child_motion_primitive_index == 5) {
+    if (child_motion_primitive_index == 3 || child_motion_primitive_index == 4) {
       //turn in place cost is less than straight motions cost
       travel_cost_raw = NodeHybrid::turn_inplace_cost*(motion_table.travel_distance_reward + motion_table.cost_penalty * normalized_cost);
       travel_cost = travel_cost_raw;
@@ -434,7 +434,7 @@ float NodeHybrid::getTraversalCost(const NodePtr & child)
       // penalizes wiggling
       travel_cost = travel_cost_raw * (1+motion_table.change_penalty);
     }
-    if (getMotionPrimitiveIndex() ==6) {
+    if (getMotionPrimitiveIndex() ==5) {
       // reverse direction
       travel_cost *= motion_table.reverse_penalty;
     }
