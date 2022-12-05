@@ -46,7 +46,7 @@ public:
     callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
     client_ = node_->create_client<ServiceT>(
       service_name,
-      rmw_qos_profile_services_default,
+      rclcpp::SystemDefaultsQoS(),
       callback_group_);
   }
 
@@ -130,6 +130,15 @@ public:
   bool wait_for_service(const std::chrono::nanoseconds timeout = std::chrono::nanoseconds::max())
   {
     return client_->wait_for_service(timeout);
+  }
+
+  /**
+  * @brief Gets the service name
+  * @return string Service name
+  */
+  std::string getServiceName()
+  {
+    return service_name_;
   }
 
 protected:

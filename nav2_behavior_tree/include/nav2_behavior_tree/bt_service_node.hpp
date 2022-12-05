@@ -17,6 +17,7 @@
 
 #include <string>
 #include <memory>
+#include <chrono>
 
 #include "behaviortree_cpp_v3/action_node.h"
 #include "nav2_util/node_utils.hpp"
@@ -25,6 +26,8 @@
 
 namespace nav2_behavior_tree
 {
+
+using namespace std::chrono_literals;  // NOLINT
 
 /**
  * @brief Abstract class representing a service based BT node
@@ -61,7 +64,7 @@ public:
     getInput("service_name", service_name_);
     service_client_ = node_->create_client<ServiceT>(
       service_name_,
-      rmw_qos_profile_services_default,
+      rclcpp::SystemDefaultsQoS(),
       callback_group_);
 
     // Make a request for the service without parameter
@@ -71,7 +74,15 @@ public:
     RCLCPP_DEBUG(
       node_->get_logger(), "Waiting for \"%s\" service",
       service_name_.c_str());
-    service_client_->wait_for_service();
+    if (!service_client_->wait_for_service(1s)) {
+      RCLCPP_ERROR(
+        node_->get_logger(), "\"%s\" service server not available after waiting for 1 s",
+        service_node_name.c_str());
+      throw std::runtime_error(
+              std::string(
+                "Service server %s not available",
+                service_node_name.c_str()));
+    }
 
     RCLCPP_DEBUG(
       node_->get_logger(), "\"%s\" BtServiceNode initialized",
@@ -145,9 +156,10 @@ public:
   /**
    * @brief Function to perform some user-defined operation upon successful
    * completion of the service. Could put a value on the blackboard.
+   * @param response can be used to get the result of the service call in the BT Node.
    * @return BT::NodeStatus Returns SUCCESS by default, user may override to return another value
    */
-  virtual BT::NodeStatus on_completion()
+  virtual BT::NodeStatus on_completion(std::shared_ptr<typename ServiceT::Response>/*response*/)
   {
     return BT::NodeStatus::SUCCESS;
   }
@@ -165,10 +177,10 @@ public:
       auto timeout = remaining > bt_loop_duration_ ? bt_loop_duration_ : remaining;
 
       rclcpp::FutureReturnCode rc;
-      rc = callback_group_executor_.spin_until_future_complete(future_result_, server_timeout_);
+      rc = callback_group_executor_.spin_until_future_complete(future_result_, timeout);
       if (rc == rclcpp::FutureReturnCode::SUCCESS) {
         request_sent_ = false;
-        BT::NodeStatus status = on_completion();
+        BT::NodeStatus status = on_completion(future_result_.get());
         return status;
       }
 

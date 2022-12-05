@@ -89,7 +89,7 @@ def generate_launch_description():
             parameters=[{
                             'node_names':
                             [
-                                'filter_mask_server', 'costmap_filter_info_server', 'bt_navigator'
+                                'filter_mask_server', 'costmap_filter_info_server'
                             ]
                         },
                         {'autostart': True}]),
@@ -118,6 +118,7 @@ def generate_launch_description():
                               'use_sim_time': 'True',
                               'params_file': new_yaml,
                               'bt_xml_file': bt_navigator_xml,
+                              'use_composition': 'False',
                               'autostart': 'True'}.items()),
 
         Node(

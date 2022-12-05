@@ -33,13 +33,18 @@
       <input_port name="server_timeout">Server timeout</input_port>
     </Action>
 
-    <Action ID="DriveOnHeadingCancel">
+    <Action ID="CancelDriveOnHeading">
       <input_port name="service_name">Service name to cancel the drive on heading behavior</input_port>
       <input_port name="server_timeout">Server timeout</input_port>
     </Action>
 
     <Action ID="CancelSpin">
       <input_port name="service_name">Service name to cancel the spin behavior</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+    </Action>
+
+    <Action ID="CancelAssistedTeleop">
+      <input_port name="service_name">Service name to cancel the assisted teleop behavior</input_port>
       <input_port name="server_timeout">Server timeout</input_port>
     </Action>
 
@@ -53,6 +58,18 @@
       <input_port name="server_timeout">Server timeout</input_port>
     </Action>
 
+    <Action ID="ClearCostmapExceptRegion">
+      <input_port name="service_name">Service name</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+      <input_port name="reset_distance">Distance from the robot above which obstacles are cleared</input_port>
+    </Action>
+
+    <Action ID="ClearCostmapAroundRobot">
+      <input_port name="service_name">Service name</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+      <input_port name="reset_distance">Distance from the robot under which obstacles are cleared</input_port>
+    </Action>
+
     <Action ID="ComputePathToPose">
       <input_port name="goal">Destination to plan to</input_port>
       <input_port name="start">Start pose of the path if overriding current robot pose</input_port>
@@ -60,6 +77,7 @@
       <input_port name="service_name">Service name</input_port>
       <input_port name="server_timeout">Server timeout</input_port>
       <output_port name="path">Path created by ComputePathToPose node</output_port>
+      <output_port name="error_code_id">"Compute path to pose error code"</output_port>
     </Action>
 
     <Action ID="ComputePathThroughPoses">
@@ -69,6 +87,7 @@
       <input_port name="server_timeout">Server timeout</input_port>
       <input_port name="planner_id">Mapped name to the planner plugin type to use</input_port>
       <output_port name="path">Path created by ComputePathToPose node</output_port>
+      <output_port name="error_code_id">"Compute path through poses error code"</output_port>
     </Action>
 
     <Action ID="RemovePassedGoals">
@@ -95,6 +114,7 @@
       <input_port name="goal_checker_id" default="GoalChecker">Goal checker</input_port>
       <input_port name="service_name">Service name</input_port>
       <input_port name="server_timeout">Server timeout</input_port>
+      <output_port name="error_code_id">Follow Path error code</output_port>
     </Action>
 
     <Action ID="NavigateToPose">
@@ -102,6 +122,7 @@
         <input_port name="service_name">Service name</input_port>
         <input_port name="server_timeout">Server timeout</input_port>
         <input_port name="behavior_tree">Behavior tree to run</input_port>
+        <output_port name="error_code_id">Navigate to pose error code</output_port>
     </Action>
 
     <Action ID="NavigateThroughPoses">
@@ -109,6 +130,7 @@
         <input_port name="service_name">Service name</input_port>
         <input_port name="server_timeout">Server timeout</input_port>
         <input_port name="behavior_tree">Behavior tree to run</input_port>
+        <output_port name="error_code_id">Navigate through poses error code</output_port>
     </Action>
 
     <Action ID="ReinitializeGlobalLocalization">
@@ -145,6 +167,12 @@
         <output_port name="selected_controller">Name of the selected controller received from the topic subcription</output_port>
     </Action>
 
+    <Action ID="SmootherSelector">
+        <input_port name="topic_name">Name of the topic to receive smoother selection commands</input_port>
+        <input_port name="default_smoother">Default smoother of the smoother selector</input_port>
+        <output_port name="selected_smoother">Name of the selected smoother received from the topic subcription</output_port>
+    </Action>
+
     <Action ID="GoalCheckerSelector">
         <input_port name="topic_name">Name of the topic to receive goal checker selection commands</input_port>
         <input_port name="default_goal_checker">Default goal checker of the controller selector</input_port>
@@ -160,6 +188,13 @@
 
     <Action ID="Wait">
       <input_port name="wait_duration">Wait time</input_port>
+      <input_port name="server_name">Service name</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+    </Action>
+
+    <Action ID="AssistedTeleop">
+      <input_port name="time_allowance">Allowed time for spinning</input_port>
+      <input_port name="is_recovery">If true recovery count will be incremented</input_port>
       <input_port name="server_name">Service name</input_port>
       <input_port name="server_timeout">Server timeout</input_port>
     </Action>
@@ -252,6 +287,9 @@
       <input_port name="path">Planned Path</input_port>
       <input_port name="prox_len">Proximity length (m) for the path to be longer on approach</input_port>
       <input_port name="length_factor">Length multiplication factor to check if the path is significantly longer </input_port>
+    </Decorator>
+
+    <Decorator ID="GoalUpdatedController">
     </Decorator>
 
   </TreeNodesModel>

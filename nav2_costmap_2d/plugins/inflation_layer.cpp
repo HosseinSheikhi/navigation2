@@ -171,7 +171,7 @@ InflationLayer::onFootprintChanged()
   need_reinflation_ = true;
 
   RCLCPP_DEBUG(
-    logger_, "InflationLayer::onFootprintChanged(): num footprint points: %lu,"
+    logger_, "InflationLayer::onFootprintChanged(): num footprint points: %zu,"
     " inscribed_radius_ = %.3f, inflation_radius_ = %.3f",
     layered_costmap_->getFootprint().size(), inscribed_radius_, inflation_radius_);
 }
@@ -442,7 +442,7 @@ InflationLayer::dynamicParametersCallback(
         need_reinflation_ = true;
         need_cache_recompute = true;
       } else if (param_name == name_ + "." + "cost_scaling_factor" && // NOLINT
-        cost_scaling_factor_ != parameter.as_double())
+        getCostScalingFactor() != parameter.as_double())
       {
         cost_scaling_factor_ = parameter.as_double();
         need_reinflation_ = true;

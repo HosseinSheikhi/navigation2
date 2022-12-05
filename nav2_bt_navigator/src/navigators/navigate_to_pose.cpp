@@ -14,7 +14,6 @@
 
 #include <vector>
 #include <string>
-#include <set>
 #include <memory>
 #include <limits>
 #include "nav2_bt_navigator/navigators/navigate_to_pose.hpp"
@@ -101,7 +100,9 @@ NavigateToPoseNavigator::goalReceived(ActionT::Goal::ConstSharedPtr goal)
 }
 
 void
-NavigateToPoseNavigator::goalCompleted(typename ActionT::Result::SharedPtr /*result*/)
+NavigateToPoseNavigator::goalCompleted(
+  typename ActionT::Result::SharedPtr /*result*/,
+  const nav2_behavior_tree::BtStatus /*final_bt_status*/)
 {
 }
 

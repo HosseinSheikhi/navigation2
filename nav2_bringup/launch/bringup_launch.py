@@ -42,6 +42,7 @@ def generate_launch_description():
     autostart = LaunchConfiguration('autostart')
     use_composition = LaunchConfiguration('use_composition')
     use_respawn = LaunchConfiguration('use_respawn')
+    log_level = LaunchConfiguration('log_level')
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
@@ -52,15 +53,10 @@ def generate_launch_description():
     remappings = [('/tf', 'tf'),
                   ('/tf_static', 'tf_static')]
 
-    # Create our own temporary YAML files that include substitutions
-    param_substitutions = {
-        'use_sim_time': use_sim_time,
-        'yaml_filename': map_yaml_file}
-
     configured_params = RewrittenYaml(
         source_file=params_file,
         root_key=namespace,
-        param_rewrites=param_substitutions,
+        param_rewrites={},
         convert_types=True)
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
@@ -83,6 +79,7 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
+        default_value='',
         description='Full path to map yaml file to load')
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -107,6 +104,10 @@ def generate_launch_description():
         'use_respawn', default_value='False',
         description='Whether to respawn if a node crashes. Applied when composition is disabled.')
 
+    declare_log_level_cmd = DeclareLaunchArgument(
+        'log_level', default_value='info',
+        description='log level')
+
     # Specify the actions
     bringup_cmd_group = GroupAction([
         PushRosNamespace(
@@ -119,6 +120,7 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container_isolated',
             parameters=[configured_params, {'autostart': autostart}],
+            arguments=['--ros-args', '--log-level', log_level],
             remappings=remappings,
             output='screen'),
 
@@ -171,6 +173,7 @@ def generate_launch_description():
     ld.add_action(declare_autostart_cmd)
     ld.add_action(declare_use_composition_cmd)
     ld.add_action(declare_use_respawn_cmd)
+    ld.add_action(declare_log_level_cmd)
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(bringup_cmd_group)
