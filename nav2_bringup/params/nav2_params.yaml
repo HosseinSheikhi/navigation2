@@ -30,7 +30,7 @@ amcl:
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true
-    transform_tolerance: 1.0
+    transform_tolerance: 50.0
     update_min_a: 0.2
     update_min_d: 0.25
     z_hit: 0.5
@@ -194,7 +194,7 @@ local_costmap:
       width: 8
       height: 8
       resolution: 0.05
-      footprint: '[[0.345, -0.70], [0.345, 0.70], [-0.345, 0.70], [-0.345, -0.70]]'
+      footprint: '[[0.60, -0.45], [0.6, 0.45], [-0.60, 0.45], [-0.60, -0.45]]'
       # footprint: '[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]'  #'[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]' #'[[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]' # these are exact diemensions of dingo-O
       #footprint: '[[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]' # exact dims
       plugins: ["voxel_layer", "inflation_layer"]
@@ -242,7 +242,7 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       use_sim_time: True
-      footprint: '[[0.345, -0.70], [0.345, 0.70], [-0.345, 0.70], [-0.345, -0.70]]'
+      footprint: '[[0.60, -0.45], [0.6, 0.45], [-0.60, 0.45], [-0.60, -0.45]]'
       # footprint: '[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]' #'[[0.345, -0.90], [0.345, 0.90], [-0.345, 0.90], [-0.345, -0.90]]'
       #footprint: '[[0.345, -0.260], [0.345, 0.260], [-0.345, 0.260], [-0.345, -0.260]]' # exact dims
       resolution: 0.05
